@@ -9,20 +9,43 @@
 </head>
 <body>
     <section class="chat__section">
-        <div class="brand">
-            <i class="bi bi-chat-left-dots"></i>
-            <h1>ChitChat</h1>
-        </div>
+        <header class="chat__header">
+            <div class="brand">
+                <i class="bi bi-chat-left-dots"></i>
+                <h1>ChitChat</h1>
+            </div>
 
-        <div class="message_area">
+            <div class="header__controls">
+                <button class="btn btn-ghost" id="themeToggle" aria-label="Toggle theme"><i class="bi bi-moon-stars"></i></button>
+                <button class="btn btn-primary" id="changeNameBtn">Set / Change Name</button>
+                <button class="btn btn-danger" id="leaveBtn">Leave</button>
+            </div>
+        </header>
+
+        <div class="message_area" id="messageArea">
             <!-- Messages will be dynamically added here -->
         </div>
 
         <div class="input_area">
-            <textarea name="type" cols="30" rows="1" id="message_Area" placeholder="Write message here"></textarea>
-            <button type="button" class="send_btn"><i class="bi bi-send"></i></button>
+            <textarea name="type" cols="30" rows="1" id="message_Area" placeholder="Write a message and press Enter"></textarea>
+            <button type="button" class="send_btn" id="sendBtn"><i class="bi bi-send"></i></button>
         </div>
     </section>
+
+    <!-- Join handled via /join.html. Modal removed in favour of JoinForm page -->
+    <!-- Change-name modal -->
+    <div id="changeModal" class="modal hidden" role="dialog" aria-modal="true">
+        <div class="modal__content">
+            <h3 id="changeTitle">Change your display name</h3>
+            <input type="text" id="changeNameInput" placeholder="New display name" maxlength="32" />
+            <div class="modal__actions">
+                <button class="btn btn-secondary" id="changeCancel">Cancel</button>
+                <button class="btn btn-primary" id="changeConfirm">Save <span class="spinner" aria-hidden="true"></span></button>
+            </div>
+        </div>
+    </div>
+    <!-- Toast container -->
+    <div id="toasts" class="toasts"></div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/client.js"></script>
 </body>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Join • ChitChat</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main class="join-root fade-in" role="main">
+      <div class="join-container">
+        <header class="join-header">
+          <div class="logo">
+            <i class="bi bi-chat-left-dots"></i>
+            <span class="logo-text">ChitChat</span>
+          </div>
+          <p class="lead">Global conversation — one room. Pick a display name and say hello.</p>
+        </header>
+
+        <section class="join-grid">
+          <aside class="join-side" aria-hidden="true">
+            <div class="side-visual">
+              <!-- decorative SVG -->
+              <svg width="280" height="220" viewBox="0 0 280 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="0" y="0" width="280" height="220" rx="18" fill="url(#g)"/>
+                <g opacity="0.14" fill="#fff">
+                  <circle cx="64" cy="70" r="36" />
+                  <circle cx="164" cy="120" r="28" />
+                </g>
+                <defs>
+                  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                    <stop stop-color="#052341" offset="0" stop-opacity="0.85"/>
+                    <stop stop-color="#063b2e" offset="1" stop-opacity="0.74"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <p class="side-note">Secure, lightweight, and real-time from your browser. No accounts required.</p>
+          </aside>
+
+          <article class="join-card" aria-labelledby="join-heading">
+            <div class="card-head">
+              <div id="avatarPreview" class="avatar-preview" aria-hidden="true"></div>
+              <div>
+                <h2 id="join-heading">Enter your display name</h2>
+                <p class="muted small">This will be shown to everyone in the chat. You can change it later.</p>
+              </div>
+            </div>
+
+            <form id="joinForm" novalidate>
+              <label for="joinName" class="sr-only">Display name</label>
+              <input id="joinName" name="name" type="text" maxlength="32" placeholder="e.g. Alex Johnson" aria-required="true" autocomplete="name" />
+
+              <div class="form-row">
+                <div class="controls">
+                  <button id="joinBtn" type="submit" class="btn btn-primary" disabled>
+                    <span class="btn-label">Join ChitChat</span>
+                    <span class="spinner" aria-hidden="true"></span>
+                  </button>
+                  <!-- <button id="openChatBtn" type="button" class="btn btn-ghost">Open Chat</button> -->
+                </div>
+              </div>
+
+              <div id="joinError" class="error" role="alert" aria-live="polite"></div>
+            </form>
+
+            <footer class="card-foot muted small">Your name is stored only on this device. Leaving will clear it.</footer>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <div id="toasts" class="toasts" aria-live="polite"></div>
+    <script src="/JoinForm.js"></script>
+  </body>
+</html>
