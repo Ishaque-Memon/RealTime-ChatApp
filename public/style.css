@@ -1,0 +1,118 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #93deff;
+}
+
+.chat__section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.brand i {
+    font-size: 2rem;
+    color: #4a90e2;
+    /* margin-right: 10px; */
+    margin-right: 11px;
+    position: relative;
+    top: 4px;
+}
+
+.brand h1 {
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.message_area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    background: #20366b;
+    border-radius: 8px;
+}
+
+.msg1, .msg2 {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    max-width: 70%;
+    position: relative;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.msg1 {
+    align-self: flex-start;
+    background-color: #d1f7d6;
+}
+
+.msg2 {
+    align-self: flex-end;
+    background-color: #e1f5fe;
+}
+
+.msg1 h4, .msg2 h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.msg1 p, .msg2 p {
+    margin: 5px 0 0 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.input_area {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+#message_Area {
+    width: 88%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    resize: none;
+    font-size: 1rem;
+    margin-right: 10px;
+    box-sizing: border-box;
+}
+
+.send_btn {
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    /* position: absolute; */
+}
+
+.send_btn i {
+    font-size: 1.2rem;
+}

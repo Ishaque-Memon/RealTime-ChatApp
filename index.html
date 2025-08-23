@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous">
+    <link rel="stylesheet" href="/style.css">
+    <title>ChitChat</title>
+</head>
+<body>
+    <section class="chat__section">
+        <div class="brand">
+            <i class="bi bi-chat-left-dots"></i>
+            <h1>ChitChat</h1>
+        </div>
+
+        <div class="message_area">
+            <!-- Messages will be dynamically added here -->
+        </div>
+
+        <div class="input_area">
+            <textarea name="type" cols="30" rows="1" id="message_Area" placeholder="Write message here"></textarea>
+            <button type="button" class="send_btn"><i class="bi bi-send"></i></button>
+        </div>
+    </section>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/client.js"></script>
+</body>
+</html>
