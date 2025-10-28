@@ -105,7 +105,14 @@ body{
 }
 .message.other{
     background:#0f1b2a;color:#e6eef6;border-bottom-left-radius:6px;
+    border: 1.5px solid rgba(31,182,255,0.22);
 }
+body.light .message.other {
+    background: #f1f7ff;
+    color: #08233a;
+    border: 1.5px solid #2563eb;
+}
+
 .message p{margin:0;line-height:1.35;padding-right:30px;}
 
 /* Message Status Indicators */
@@ -134,18 +141,54 @@ body{
 }
 
 .input_area{display:flex;gap:10px;align-items:flex-end;padding:8px}
-#message_Area{
-    flex:1;padding:12px;border-radius:14px;
-    border:1px solid rgba(255,255,255,0.04);
-    background:rgba(255,255,255,0.02);color:inherit;
-    resize:none;min-height:44px;max-height:120px;
-    font-family:inherit;line-height:1.4;
-    transition:border-color 0.2s ease, box-shadow 0.2s ease;
+/* Remove scrollbars and prevent overflow for message input */
+#message_Area {
+    flex: 1;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 2px solid rgba(31,182,255,0.13);
+    background: rgba(255,255,255,0.08);
+    color: #e6eef6;
+    font-size: 1.08rem;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    outline: none;
+    resize: none;
+    min-height: 48px;
+    box-shadow: 0 2px 8px rgba(31,182,255,0.04);
+    transition: border 0.18s, box-shadow 0.18s, background 0.18s;
+    overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
 }
-#message_Area:focus{
-    outline:none;
-    border-color:rgba(31,182,255,0.4);
-    box-shadow:0 0 0 3px rgba(31,182,255,0.1);
+#message_Area::-webkit-scrollbar {
+    display: none;
+}
+#message_Area:focus {
+    border: 2px solid var(--accent, #1fb6ff);
+    background: rgba(31,182,255,0.10);
+    box-shadow: 0 0 0 2px var(--accent, #1fb6ff);
+    color: #fff;
+}
+#message_Area::placeholder {
+    color: #b6c6e3;
+    opacity: 1;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    font-size: 1.05rem;
+}
+body.light #message_Area {
+    background: #fff;
+    color: #0b1320;
+    border: 2px solid #cfefff;
+}
+body.light #message_Area:focus {
+    border: 2px solid #2563eb;
+    background: #f6fbff;
+    color: #08233a;
+}
+body.light #message_Area::placeholder {
+    color: #8ca2c7;
 }
 .send_btn{
     width:48px;height:48px;border-radius:12px;
@@ -300,14 +343,57 @@ body{
 }
 .join-card input:hover:not(:focus){
     border-color:rgba(255,255,255,0.12);
-    background:rgba(255,255,255,0.04);
+/* Hide scrollbars for the message input field */
+#message_Area {
+    overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
 }
-.join-card input:focus{
-    border-color:rgba(31,182,255,0.6);
-    box-shadow:0 0 0 4px rgba(31,182,255,0.12);
-    background:rgba(255,255,255,0.05);
+#message_Area::-webkit-scrollbar {
+    display: none;
 }
-.join-card input::placeholder{
+    flex: 1;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 2px solid rgba(31,182,255,0.13);
+    background: rgba(255,255,255,0.08);
+    color: #e6eef6;
+    font-size: 1.08rem;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    outline: none;
+    resize: none;
+    min-height: 48px;
+    box-shadow: 0 2px 8px rgba(31,182,255,0.04);
+    transition: border 0.18s, box-shadow 0.18s, background 0.18s;
+
+}
+#message_Area:focus {
+    border: 2px solid var(--accent, #1fb6ff);
+    background: rgba(31,182,255,0.10);
+    box-shadow: 0 0 0 2px var(--accent, #1fb6ff);
+    color: #fff;
+}
+#message_Area::placeholder {
+    color: #b6c6e3;
+    opacity: 1;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    font-size: 1.05rem;
+}
+body.light #message_Area {
+    background: #fff;
+    color: #0b1320;
+    border: 2px solid #cfefff;
+}
+body.light #message_Area:focus {
+    border: 2px solid #2563eb;
+    background: #f6fbff;
+    color: #08233a;
+}
+body.light #message_Area::placeholder {
+    color: #8ca2c7;
+}
     color:rgba(230,238,246,0.4);
     transition:color 0.2s ease;
 }
@@ -584,7 +670,9 @@ body.light .chat__section{
     box-shadow:0 8px 28px rgba(10,20,40,0.06);
     border:1px solid rgba(0,0,0,0.06);
 }
-body.light .message.other{background:#f1f7ff;color:#08233a}
+body.light .message.other{background:#f1f7ff;color:#08233a;
+    border: 1.5px solid #2563eb;
+}
 body.light .message.me{background:#cfefff;color:#08233a}
 body.light .btn-ghost{color:#334155;border-color:rgba(0,0,0,0.12)}
 body.light .btn-ghost:hover{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.2)}
@@ -712,4 +800,43 @@ body.light .message_area::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,0.
         animation-iteration-count:1 !important;
         transition-duration:0.01ms !important;
     }
+}
+
+/* --- Enhanced reply icon and message.other border for all themes --- */
+.message.other {
+    background: #0f1b2a;
+    color: #e6eef6;
+    border-bottom-left-radius: 6px;
+    border: 1.5px solid rgba(31,182,255,0.22);
+}
+body.light .message.other {
+    background: #f1f7ff;
+    color: #08233a;
+    border: 1.5px solid #2563eb;
+}
+
+/* Reply icon always visible and high-contrast */
+.message.other .btn-reply svg {
+    stroke: #2563eb !important;
+    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #2563eb);
+}
+body.light .message.other .btn-reply svg {
+    stroke: #2563eb !important;
+    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #2563eb);
+}
+
+/* Ensure reply button background is visible on all backgrounds */
+.message.other .btn-reply {
+    background: rgba(37,99,235,0.08) !important;
+    color: #2563eb !important;
+}
+.message.other .btn-reply:hover, .message.other .btn-reply:focus {
+    background: rgba(37,99,235,0.18) !important;
+}
+body.light .message.other .btn-reply {
+    background: rgba(37,99,235,0.10) !important;
+    color: #2563eb !important;
+}
+body.light .message.other .btn-reply:hover, body.light .message.other .btn-reply:focus {
+    background: rgba(37,99,235,0.18) !important;
 }
