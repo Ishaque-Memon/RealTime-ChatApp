@@ -36,23 +36,38 @@ body{
 .btn-secondary{background:#0f2540;color:#dff5ff}
 .btn-danger{background:var(--danger);color:#fff}
 
-.message_area{flex:1;overflow:auto;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02))}
-.messages{display:flex;flex-direction:column;gap:12px}
-.message{max-width:78%;border-radius:12px}
-.message.me{align-self:flex-end;color:#fff}
-.message.other{align-self:flex-start;color:#e6eef6}
-.message .meta{display:flex;gap:8px;align-items:center;font-size:0.8rem;color:var(--muted);margin:0 0 6px 0}
+.message_area{flex:1;overflow:auto;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02)); scroll-behavior: smooth;}
+.messages{display:flex;flex-direction:column;gap:8px;} /* Reduced gap for a tighter look */
 
-/* The bubble is the visible message box; width is calculated dynamically in JS */
-.bubble{display:inline-block;padding:12px;border-radius:12px;box-shadow:0 4px 12px rgba(2,6,23,0.32);word-break:break-word;white-space:pre-wrap}
-.message.me .bubble{background:linear-gradient(180deg, #083c6b, #06527f);color:#fff;border-bottom-right-radius:6px}
-.message.other .bubble{background:linear-gradient(180deg, #0f1b2a, #0b2538);color:#e6eef6;border-bottom-left-radius:6px}
+/* Message Grouping */
+.message-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.message-group.me{align-items:flex-end;}
+.message-group.other{align-items:flex-start;}
+.message-group .meta{display:flex;gap:8px;align-items:center;font-size:0.8rem;color:var(--muted);margin:0 0 4px 0;}
+.message-group.me .meta{justify-content:flex-end;}
 
-.message p{margin:0;line-height:1.35}
+.message{max-width:78%;border-radius:12px;padding:8px 12px;word-break:break-word;white-space:pre-wrap;box-shadow:0 2px 8px rgba(2,6,23,0.2);}
+.message.me{background:linear-gradient(180deg, #083c6b, #06527f);color:#fff;border-bottom-right-radius:6px;}
+.message.other{background:linear-gradient(180deg, #0f1b2a, #0b2538);color:#e6eef6;border-bottom-left-radius:6px;}
+.message p{margin:0;line-height:1.35;}
 
 .input_area{display:flex;gap:10px;align-items:center;padding:8px}
 #message_Area{flex:1;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;resize:none;min-height:44px}
 .send_btn{width:48px;height:48px;border-radius:12px;background:var(--accent);color:#fff;border:0;display:grid;place-items:center}
+
+/* Typing indicator */
+.typing-indicator-container{
+    min-height:20px; /* Reserve space */
+    color:var(--muted);
+    font-size:0.85rem;
+    padding: 0 18px;
+    opacity:1;
+    transition:opacity 0.2s ease-out;
+}
+.typing-indicator-container.hidden{
+    opacity:0;
+    pointer-events:none;
+}
 
 /* modal */
 .modal{position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(rgba(2,6,23,0.6), rgba(2,6,23,0.6));z-index:60}
@@ -79,6 +94,37 @@ body{
     .chat__section{height:100vh;border-radius:0;padding:12px}
     .message{max-width:92%}
     .header__controls{gap:6px}
+}
+
+/* Reply button */
+.message .btn-reply{
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    font-size:0.9rem;
+    padding:4px 8px;
+    border-radius:6px;
+    cursor:pointer;
+    opacity:0;
+    transition:opacity 0.2s ease-in-out;
+    margin-left:8px;
+}
+.message:hover .btn-reply{
+    opacity:1;
+}
+.message.me .btn-reply{
+    color:rgba(255,255,255,0.6);
+}
+.message.other .btn-reply{
+    color:rgba(230,238,246,0.6);
+}
+.reply-to{
+    font-size:0.75rem;
+    color:var(--muted);
+    margin-bottom:4px;
+    padding-left:4px;
+    border-left:2px solid var(--accent);
+    opacity:0.8;
 }
 
 /* Join form specific */

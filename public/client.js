@@ -116,78 +116,98 @@ themeToggle.addEventListener('click', ()=>{
    Messaging
    -----------------------------*/
 
-function renderMessage({user, message, time, system=false}){
-    // normalize time
+function renderMessage({user, message, time, system=false, replyTo=null}){
     const ts = time ? Number(time) : Date.now();
     const isMe = !system && user === currentUser;
+    const messageClass = system ? 'other' : (isMe ? 'me' : 'other');
 
-    const wrap = document.createElement('div');
-    wrap.className = 'message ' + (system ? 'other' : (isMe ? 'me' : 'other'));
-    wrap.dataset.time = ts;
-
-    const meta = document.createElement('div'); meta.className = 'meta';
-    const nameSpan = document.createElement('strong'); nameSpan.textContent = system ? 'System' : (user || 'Unknown');
-    const timeSpan = document.createElement('span'); timeSpan.textContent = new Date(ts).toLocaleTimeString();
-    meta.appendChild(nameSpan); meta.appendChild(timeSpan);
-
-    // create bubble
-    const bubble = document.createElement('div'); bubble.className = 'bubble';
-    const p = document.createElement('p'); p.textContent = message;
-    bubble.appendChild(p);
-
-    // measurement and sizing (reuse existing measurer if present)
-    const measurer = document.getElementById('_msg_measurer') || (function(){
-        const m = document.createElement('div'); m.id = '_msg_measurer';
-        m.style.position = 'absolute'; m.style.left = '-9999px'; m.style.top = '0';
-        m.style.visibility = 'hidden'; m.style.pointerEvents = 'none';
-        m.style.width = 'auto'; m.style.maxWidth = 'none'; m.style.whiteSpace = 'pre-wrap';
-        m.style.font = window.getComputedStyle(document.body).font;
-        document.body.appendChild(m);
-        return m;
-    })();
-
-    measurer.textContent = message;
-    const containerWidth = messageArea.clientWidth || messageArea.getBoundingClientRect().width || window.innerWidth;
-    const maxPx = Math.max(160, Math.floor(containerWidth * 0.78));
-    const minPx = 90;
-    measurer.style.width = 'auto';
-    const natural = Math.min(measurer.scrollWidth + 24, maxPx);
-    const approxCharPx = 7; const charsToFill = Math.max(40, Math.floor(containerWidth / approxCharPx));
-    const ratio = Math.min(1, (message || '').length / charsToFill);
-    const proportional = Math.floor(minPx + ratio * (maxPx - minPx));
-    const finalW = Math.max(minPx, Math.min(maxPx, Math.max(natural, proportional)));
-    bubble.style.width = finalW + 'px';
-
-    wrap.appendChild(meta);
-    wrap.appendChild(bubble);
-
-    // ensure there's a .messages container inside messageArea
-    let msgs = messageArea.querySelector('.messages');
-    if(!msgs){ msgs = document.createElement('div'); msgs.className = 'messages'; messageArea.appendChild(msgs); }
-
-    // insert in chronological order by data-time
-    const children = Array.from(msgs.children);
-    let inserted = false;
-    for(const child of children){
-        const ct = Number(child.dataset.time || 0);
-        if(ct > ts){ msgs.insertBefore(wrap, child); inserted = true; break; }
+    let messagesContainer = messageArea.querySelector('.messages');
+    if(!messagesContainer){
+        messagesContainer = document.createElement('div');
+        messagesContainer.className = 'messages';
+        messageArea.appendChild(messagesContainer);
     }
-    if(!inserted) msgs.appendChild(wrap);
 
-    // scroll to bottom if inserted at end
-    if(!inserted) messageArea.scrollTop = messageArea.scrollHeight;
-    else {
-        // keep a small scroll to reveal new message in place
-        // if user was near bottom, snap to bottom
-        const nearBottom = messageArea.scrollHeight - messageArea.scrollTop - messageArea.clientHeight < 160;
-        if(nearBottom) messageArea.scrollTop = messageArea.scrollHeight;
+    // Check if the last message was from the same user and within a short time frame
+    const lastMessageGroup = messagesContainer.lastElementChild;
+    let currentMessageGroup;
+
+    if (lastMessageGroup && lastMessageGroup.dataset.user === user && !system && (ts - Number(lastMessageGroup.dataset.time) < 60000) && !replyTo) { // 60 seconds
+        currentMessageGroup = lastMessageGroup;
+    } else {
+        currentMessageGroup = document.createElement('div');
+        currentMessageGroup.className = `message-group ${messageClass}`;
+        currentMessageGroup.dataset.user = user;
+        currentMessageGroup.dataset.time = ts;
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const nameSpan = document.createElement('strong');
+        nameSpan.textContent = system ? 'System' : (user || 'Unknown');
+        const timeSpan = document.createElement('span');
+        timeSpan.textContent = new Date(ts).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        meta.appendChild(nameSpan);
+        meta.appendChild(timeSpan);
+        currentMessageGroup.appendChild(meta);
+        messagesContainer.appendChild(currentMessageGroup);
     }
+
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${messageClass}`;
+    messageElement.dataset.messageId = ts; // Unique ID for replies
+
+    if (replyTo) {
+        const replyToElement = document.createElement('div');
+        replyToElement.className = 'reply-to';
+        replyToElement.textContent = `Replying to ${replyTo.user}: "${replyTo.message.substring(0, 30)}..."`;
+        messageElement.appendChild(replyToElement);
+    }
+
+    const p = document.createElement('p');
+    p.textContent = message;
+    messageElement.appendChild(p);
+
+    // Add reply button
+    if (!system) {
+        const replyBtn = document.createElement('button');
+        replyBtn.className = 'btn btn-ghost btn-reply';
+        replyBtn.innerHTML = '<i class="bi bi-reply"></i>';
+        replyBtn.title = 'Reply to this message';
+        replyBtn.addEventListener('click', () => {
+            textArea.value = `@${user} `;
+            textArea.focus();
+            // Store reply context for sendMessage
+            textArea.dataset.replyToUser = user;
+            textArea.dataset.replyToMessage = message;
+            textArea.dataset.replyToTime = ts;
+        });
+        messageElement.appendChild(replyBtn);
+    }
+
+    currentMessageGroup.appendChild(messageElement);
+
+    // Scroll to bottom
+    messageArea.scrollTop = messageArea.scrollHeight;
 }
 
 function sendMessage(){
     const txt = textArea.value.trim();
     if(!txt || !currentUser) return;
-    const msg = {user: currentUser, message: txt, time: Date.now()};
+
+    let replyTo = null;
+    if (textArea.dataset.replyToUser && textArea.dataset.replyToMessage && textArea.dataset.replyToTime) {
+        replyTo = {
+            user: textArea.dataset.replyToUser,
+            message: textArea.dataset.replyToMessage,
+            time: textArea.dataset.replyToTime
+        };
+        // Clear reply context after sending
+        delete textArea.dataset.replyToUser;
+        delete textArea.dataset.replyToMessage;
+        delete textArea.dataset.replyToTime;
+    }
+
+    const msg = {user: currentUser, message: txt, time: Date.now(), replyTo: replyTo};
     renderMessage(msg);
     socket.emit('message', msg);
     textArea.value = '';
@@ -195,6 +215,17 @@ function sendMessage(){
 
 sendBtn.addEventListener('click', sendMessage);
 textArea.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+
+// Typing indicator logic
+let typingTimeout = null;
+textArea.addEventListener('input', () => {
+    if (!currentUser) return;
+    socket.emit('typing', { user: currentUser });
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        socket.emit('stop-typing', { user: currentUser });
+    }, 1500); // Emit stop-typing after 1.5 seconds of inactivity
+});
 
 // socket handlers
 socket.on('connect', ()=>{ console.log('connected'); });
@@ -204,6 +235,45 @@ socket.on('message', (msg)=>{ renderMessage(msg); });
 socket.on('user-joined', (data)=>{ toast(`${data.user} joined`, {type:'success'}); renderMessage({user:'System', message:`${data.user} joined the chat`, time: data.time, system:true}); });
 
 socket.on('user-left', (data)=>{ toast(`${data.user} left`, {type:'warn'}); renderMessage({user:'System', message:`${data.user} left the chat`, time: data.time, system:true}); });
+
+// New socket handlers for typing indicators
+const typingUsers = new Set();
+const typingIndicatorContainer = document.createElement('div');
+typingIndicatorContainer.className = 'typing-indicator-container';
+messageArea.parentNode.insertBefore(typingIndicatorContainer, messageArea.nextSibling); // Insert after messageArea
+
+function updateTypingIndicator() {
+    if (typingUsers.size === 0) {
+        typingIndicatorContainer.textContent = '';
+        typingIndicatorContainer.classList.add('hidden');
+    } else {
+        const users = Array.from(typingUsers).filter(u => u !== currentUser);
+        if (users.length === 0) {
+            typingIndicatorContainer.textContent = '';
+            typingIndicatorContainer.classList.add('hidden');
+        } else if (users.length === 1) {
+            typingIndicatorContainer.textContent = `${users[0]} is typing...`;
+            typingIndicatorContainer.classList.remove('hidden');
+        } else {
+            typingIndicatorContainer.textContent = `${users.join(', ')} are typing...`;
+            typingIndicatorContainer.classList.remove('hidden');
+        }
+    }
+}
+
+socket.on('typing', (data) => {
+    if (data.user !== currentUser) {
+        typingUsers.add(data.user);
+        updateTypingIndicator();
+    }
+});
+
+socket.on('stop-typing', (data) => {
+    if (data.user !== currentUser) {
+        typingUsers.delete(data.user);
+        updateTypingIndicator();
+    }
+});
 
 // attempt to restore theme preference
 applyTheme(dark);

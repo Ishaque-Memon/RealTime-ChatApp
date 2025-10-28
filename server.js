@@ -4,7 +4,7 @@ const socketIo = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Serve static files from 'public' directory
 app.use(express.static(__dirname + '/public'));
@@ -21,7 +21,7 @@ io.on('connection', (socket) => {
 
     // receive regular chat messages
     socket.on('message', (message) => {
-        console.log('Received message:', message);
+        // console.log('Received message:', message); // Removed for performance in production
         socket.broadcast.emit('message', message);
     });
 
@@ -40,6 +40,15 @@ io.on('connection', (socket) => {
     socket.on('changeName', (data) => {
         console.log('Change name:', data);
         socket.broadcast.emit('name-changed', data);
+    });
+
+    // Typing indicators
+    socket.on('typing', (data) => {
+        socket.broadcast.emit('typing', data);
+    });
+
+    socket.on('stop-typing', (data) => {
+        socket.broadcast.emit('stop-typing', data);
     });
 
     socket.on('disconnect', () => {
