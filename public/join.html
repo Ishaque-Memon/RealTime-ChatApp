@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="Join ChitChat - Real-time team communication">
     <title>Join • ChitChat</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous">
     <link rel="stylesheet" href="/style.css">
   </head>
   <body>
@@ -14,63 +16,112 @@
             <i class="bi bi-chat-left-dots"></i>
             <span class="logo-text">ChitChat</span>
           </div>
-          <p class="lead">Global conversation — one room. Pick a display name and say hello.</p>
+          <p class="lead">Real-time team conversations. No sign-up required — just pick a name and start chatting.</p>
         </header>
 
         <section class="join-grid">
           <aside class="join-side" aria-hidden="true">
             <div class="side-visual">
-              <!-- decorative SVG -->
+              <!-- Decorative SVG illustration -->
               <svg width="280" height="220" viewBox="0 0 280 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <rect x="0" y="0" width="280" height="220" rx="18" fill="url(#g)"/>
+                <rect x="0" y="0" width="280" height="220" rx="18" fill="url(#gradient)"/>
+                <!-- Chat bubble shapes -->
                 <g opacity="0.14" fill="#fff">
-                  <circle cx="64" cy="70" r="36" />
-                  <circle cx="164" cy="120" r="28" />
+                  <rect x="20" y="40" width="140" height="50" rx="12" />
+                  <rect x="120" y="110" width="140" height="50" rx="12" />
+                  <rect x="20" y="140" width="100" height="40" rx="10" />
                 </g>
+                <!-- Accent circles -->
+                <circle cx="240" cy="50" r="24" fill="url(#accentGradient)" opacity="0.3"/>
+                <circle cx="50" cy="180" r="18" fill="url(#accentGradient)" opacity="0.25"/>
                 <defs>
-                  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-                    <stop stop-color="#052341" offset="0" stop-opacity="0.85"/>
-                    <stop stop-color="#063b2e" offset="1" stop-opacity="0.74"/>
+                  <linearGradient id="gradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop stop-color="#052341" offset="0" stop-opacity="0.90"/>
+                    <stop stop-color="#063b2e" offset="1" stop-opacity="0.80"/>
+                  </linearGradient>
+                  <linearGradient id="accentGradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop stop-color="#1fb6ff" offset="0"/>
+                    <stop stop-color="#3fc37a" offset="1"/>
                   </linearGradient>
                 </defs>
               </svg>
             </div>
-            <p class="side-note">Secure, lightweight, and real-time from your browser. No accounts required.</p>
+            <div class="side-features">
+              <p class="side-note">
+                <i class="bi bi-shield-check"></i>
+                <strong>Secure & Lightweight</strong><br>
+                <span class="muted small">Direct WebSocket connection. Messages are ephemeral and not stored on servers.</span>
+              </p>
+              <p class="side-note">
+                <i class="bi bi-lightning-charge"></i>
+                <strong>Blazing Fast</strong><br>
+                <span class="muted small">Real-time updates with sub-100ms latency. No page refreshes needed.</span>
+              </p>
+            </div>
           </aside>
 
           <article class="join-card" aria-labelledby="join-heading">
             <div class="card-head">
-              <div id="avatarPreview" class="avatar-preview" aria-hidden="true"></div>
-              <div>
-                <h2 id="join-heading">Enter your display name</h2>
-                <p class="muted small">This will be shown to everyone in the chat. You can change it later.</p>
+              <div id="avatarPreview" class="avatar-preview" aria-hidden="true">?</div>
+              <div style="flex:1">
+                <h2 id="join-heading">Welcome to ChitChat</h2>
+                <p class="muted small">Choose a display name to get started. You can change it anytime.</p>
               </div>
             </div>
 
             <form id="joinForm" novalidate>
-              <label for="joinName" class="sr-only">Display name</label>
-              <input id="joinName" name="name" type="text" maxlength="32" placeholder="e.g. Alex Johnson" aria-required="true" autocomplete="name" />
-
-              <div class="form-row">
-                <div class="controls">
-                  <button id="joinBtn" type="submit" class="btn btn-primary" disabled>
-                    <span class="btn-label">Join ChitChat</span>
-                    <span class="spinner" aria-hidden="true"></span>
-                  </button>
-                  <!-- <button id="openChatBtn" type="button" class="btn btn-ghost">Open Chat</button> -->
+              <div class="form-field-wrapper">
+                <label for="joinName" class="sr-only">Display name</label>
+                <input 
+                  id="joinName" 
+                  name="name" 
+                  type="text" 
+                  maxlength="32"
+                  placeholder="Enter your display name"
+                  aria-required="true" 
+                  aria-describedby="nameHelp nameError"
+                  autocomplete="name"
+                  spellcheck="false"
+                />
+                <div class="input-icon" aria-hidden="true">
+                  <i class="bi bi-person"></i>
                 </div>
               </div>
 
-              <div id="joinError" class="error" role="alert" aria-live="polite"></div>
+              <div id="nameHelp" class="muted small" style="margin-top:-12px;margin-bottom:16px">
+                <i class="bi bi-info-circle"></i> 
+                Minimum 2 characters. This will be visible to everyone.
+              </div>
+
+              <div id="charCounter" class="char-counter" aria-live="polite"></div>
+
+              <div class="form-row">
+                <div class="controls">
+                  <button id="joinBtn" type="submit" class="btn btn-primary" disabled aria-describedby="joinBtnHelp">
+                    <i class="bi bi-arrow-right-circle"></i>
+                    <span class="btn-label">Join Chat</span>
+                    <span class="spinner" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="joinError" class="error" role="alert" aria-live="assertive"></div>
+              <div id="joinSuccess" class="success-message" style="display:none" role="status" aria-live="polite">
+                <i class="bi bi-check-circle"></i>
+                <span>Perfect! Opening chat...</span>
+              </div>
             </form>
 
-            <footer class="card-foot muted small">Your name is stored only on this device. Leaving will clear it.</footer>
+            <footer class="card-foot muted small" style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06)">
+              <i class="bi bi-info-circle"></i> 
+              Your name is stored locally on this device. Leaving the chat will clear it.
+            </footer>
           </article>
         </section>
       </div>
     </main>
 
-    <div id="toasts" class="toasts" aria-live="polite"></div>
+    <div id="toasts" class="toasts" aria-live="polite" aria-atomic="true"></div>
     <script src="/JoinForm.js"></script>
   </body>
 </html>
