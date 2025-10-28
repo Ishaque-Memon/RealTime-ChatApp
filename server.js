@@ -116,11 +116,29 @@ io.on('connection', (socket) => {
             user: String(message.user).trim().substring(0, 32),
             message: String(message.message).trim().substring(0, 2000),
             time: Date.now(),
-            replyTo: message.replyTo || null
+            replyTo: message.replyTo || null,
+            clientId: message.clientId || null
         };
         
         // Broadcast to all other clients
         socket.broadcast.emit('message', sanitizedMessage);
+        // Emit a 'message-sent' event back to the sender (single tick)
+        socket.emit('message-sent', { clientId: sanitizedMessage.clientId });
+        // Track delivery receipts for this message
+        if (sanitizedMessage.clientId) {
+            if (!socket._deliveryReceipts) socket._deliveryReceipts = {};
+            socket._deliveryReceipts[sanitizedMessage.clientId] = false;
+        }
+    // Listen for delivery receipts from other clients
+    socket.on('message-received', (data) => {
+        // Find the sender socket for this clientId
+        for (const [id, s] of io.of('/').sockets) {
+            if (s._deliveryReceipts && data.clientId in s._deliveryReceipts && !s._deliveryReceipts[data.clientId]) {
+                s._deliveryReceipts[data.clientId] = true;
+                s.emit('message-delivered', { clientId: data.clientId });
+            }
+        }
+    });
         
         // Optional: Message batching
         // messageBuffer.push(sanitizedMessage);

@@ -210,14 +210,17 @@ function pruneOldMessages(){
 }
 
 function renderMessage({user, message, time, system=false, replyTo=null, status='sent'}){
+
     const ts = time ? Number(time) : Date.now();
     const isMe = !system && user === currentUser;
     const messageClass = system ? 'other' : (isMe ? 'me' : 'other');
-
     const container = initMessagesContainer();
 
+    // Use clientId for status tracking if present
+    const clientId = arguments[0].clientId;
+
     // Store in cache for history/search
-    messageCache.push({user, message, time: ts, system, replyTo, status});
+    messageCache.push({user, message, time: ts, system, replyTo, status, clientId});
     if(messageCache.length > 500) messageCache.shift(); // Keep last 500 in memory
 
     // Check if we can group with the last message
@@ -251,7 +254,7 @@ function renderMessage({user, message, time, system=false, replyTo=null, status=
 
     const messageElement = document.createElement('div');
     messageElement.className = `message ${messageClass}`;
-    messageElement.dataset.messageId = ts;
+    messageElement.dataset.messageId = clientId || ts;
     messageElement.dataset.status = status;
 
     if (replyTo) {
@@ -269,12 +272,14 @@ function renderMessage({user, message, time, system=false, replyTo=null, status=
     if (isMe && !system) {
         const statusIcon = document.createElement('span');
         statusIcon.className = 'message-status';
-        statusIcon.innerHTML = status === 'sending' 
-            ? '<i class="bi bi-clock"></i>' 
-            : status === 'failed' 
-            ? '<i class="bi bi-exclamation-circle"></i>' 
-            : '<i class="bi bi-check2"></i>';
-        statusIcon.title = status === 'sending' ? 'Sending...' : status === 'failed' ? 'Failed to send' : 'Sent';
+        statusIcon.innerHTML = status === 'sending'
+            ? '<i class="bi bi-clock"></i>'
+            : status === 'failed'
+            ? '<i class="bi bi-exclamation-circle"></i>'
+            : status === 'delivered'
+            ? '<i class="bi bi-check-all"></i>'
+            : '<i class="bi bi-check"></i>';
+        statusIcon.title = status === 'sending' ? 'Sending...' : status === 'failed' ? 'Failed to send' : status === 'delivered' ? 'Delivered' : 'Sent';
         messageElement.appendChild(statusIcon);
     }
 
@@ -329,16 +334,13 @@ function sendMessage(){
         delete textArea.dataset.replyToTime;
     }
 
-    const msg = {user: currentUser, message: txt, time: Date.now(), replyTo: replyTo};
+        const clientId = Date.now().toString() + Math.random().toString(36).slice(2, 8);
+        const msg = {user: currentUser, message: txt, time: Date.now(), replyTo: replyTo, clientId};
     
     if(isOnline){
         renderMessage({...msg, status: 'sending'});
         socket.emit('message', msg);
-        // Update status to sent after short delay (optimistic)
-        setTimeout(() => {
-            const sentMsg = document.querySelector(`[data-message-id="${msg.time}"]`);
-            if(sentMsg) sentMsg.dataset.status = 'sent';
-        }, 200);
+        // Status will be updated to 'delivered' only when server confirms via 'message-delivered' event
     } else {
         messageQueue.push(msg);
         renderMessage({...msg, status: 'failed'});
@@ -403,11 +405,104 @@ textArea.addEventListener('input', () => {
 });
 
 /* -----------------------------
-   Socket Event Handlers
+        if (clientId) {
+            messageElement.dataset.messageId = clientId;
+        } else {
+            messageElement.dataset.messageId = ts;
+        }
    -----------------------------*/
 
-socket.on('message', (msg)=>{ 
-    renderMessage({...msg, status: 'sent'}); 
+socket.on('message', (msg)=>{
+    // Only render messages from other users as 'sent' initially.
+    // For the current user, status is handled optimistically and then confirmed by 'message-delivered'.
+    if (msg.user !== currentUser) {
+        renderMessage({...msg, status: 'sent'});
+        // Acknowledge receipt to server for delivery tracking
+        if (msg.clientId) {
+            socket.emit('message-received', { clientId: msg.clientId });
+        }
+    }
+});
+
+// Status update queue for messages not yet rendered
+const pendingStatusUpdates = {};
+
+function updateMessageStatusIcon(msgEl, status) {
+    msgEl.dataset.status = status;
+    const iconSpan = msgEl.querySelector('.message-status');
+    if (iconSpan) {
+        if (status === 'sending') {
+            iconSpan.innerHTML = '<i class="bi bi-clock"></i>';
+            iconSpan.title = 'Sending...';
+        } else if (status === 'failed') {
+            iconSpan.innerHTML = '<i class="bi bi-exclamation-circle"></i>';
+            iconSpan.title = 'Failed to send';
+        } else if (status === 'delivered') {
+            iconSpan.innerHTML = '<i class="bi bi-check-all"></i>';
+            iconSpan.title = 'Delivered';
+        } else {
+            iconSpan.innerHTML = '<i class="bi bi-check"></i>';
+            iconSpan.title = 'Sent';
+        }
+    }
+}
+
+// Patch status update handlers to update icon
+socket.on('message-sent', (data) => {
+    const sentMsg = document.querySelector(`[data-message-id="${data.clientId}"]`);
+    if (sentMsg) {
+        updateMessageStatusIcon(sentMsg, 'sent');
+    } else {
+        pendingStatusUpdates[data.clientId] = 'sent';
+    }
+});
+
+socket.on('message-delivered', (data) => {
+    const deliveredMsg = document.querySelector(`[data-message-id="${data.clientId}"]`);
+    if (deliveredMsg) {
+        updateMessageStatusIcon(deliveredMsg, 'delivered');
+    } else {
+        pendingStatusUpdates[data.clientId] = 'delivered';
+    }
+});
+
+// Also update pending status logic to update icon after render
+function applyPendingStatusUpdate(clientId) {
+    if (pendingStatusUpdates[clientId]) {
+        const msgEl = document.querySelector(`[data-message-id="${clientId}"]`);
+        if (msgEl) {
+            updateMessageStatusIcon(msgEl, pendingStatusUpdates[clientId]);
+            delete pendingStatusUpdates[clientId];
+        }
+    }
+}
+
+// Patch renderMessage to apply pending status updates after rendering
+const originalRenderMessage = renderMessage;
+renderMessage = function(msg) {
+    originalRenderMessage.apply(this, arguments);
+    const clientId = msg.clientId;
+    if (clientId) applyPendingStatusUpdate(clientId);
+};
+
+// Update status to 'sent' (single tick) when server receives the message
+socket.on('message-sent', (data) => {
+    const sentMsg = document.querySelector(`[data-message-id="${data.clientId}"]`);
+    if (sentMsg) {
+        sentMsg.dataset.status = 'sent';
+    } else {
+        pendingStatusUpdates[data.clientId] = 'sent';
+    }
+});
+
+// Update status to 'delivered' (double tick) when at least one other user receives
+socket.on('message-delivered', (data) => {
+    const deliveredMsg = document.querySelector(`[data-message-id="${data.clientId}"]`);
+    if (deliveredMsg) {
+        deliveredMsg.dataset.status = 'delivered';
+    } else {
+        pendingStatusUpdates[data.clientId] = 'delivered';
+    }
 });
 
 socket.on('user-joined', (data)=>{ 
